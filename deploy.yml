@@ -17,7 +17,12 @@ spec:
     spec:
       containers:
         - name: k8s-springboot-demo
-          image: demo:1.1
+          image: jameshwc/spring:0629-3
+          #tty: true
+          #stdin: true
+          volumeMounts:
+          - name: bootstrap-volume
+            mountPath: /home/
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -31,7 +36,13 @@ spec:
       tolerations:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
-
+      volumes:
+        - name: bootstrap-volume
+          configMap:
+            name: spring-vault-bootstrap
+            items:
+            - key: bootstrap.yml
+              path: bootstrap.yml
 ---
 apiVersion: v1
 kind: Service
@@ -47,3 +58,22 @@ spec:
   selector:
     app: k8s-springboot-demo
   type: NodePort
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spring-vault-bootstrap
+  namespace: default
+  labels:
+    app: k8s-springboot-demo
+data:
+  bootstrap.yml: |
+    spring:
+      cloud:
+        vault:
+          uri: http://vault:8200
+          token: root
+          generic:
+            enabled: true
+            application-name: springboot

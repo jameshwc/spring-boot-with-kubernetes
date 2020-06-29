@@ -1,0 +1,8 @@
+spring:
+  cloud:
+    vault:
+      uri: http://vault:8200
+      token: root
+      generic:
+        enabled: true
+        application-name: springboot
